@@ -1,0 +1,4 @@
+customtkinter
+PyMuPDF
+sentence-transformers
+ollama
