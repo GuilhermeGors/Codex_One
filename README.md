@@ -1,25 +1,44 @@
 # Codex_One
 Uma aplicação IA que lê livros
 
-seu_projeto_rag/
-├── main_app.py                     # Ponto de entrada da aplicação, lógica principal da GUI (CustomTkinter)
+codex_one/
+├── main_app.py
+├── config.py
+├── requirements.txt
+├── .gitignore
 |
-├── interface_usuario/              # Módulos/arquivos relacionados à GUI
-│   ├── janela_principal.py         # Layout principal, interações
-│   └── widgets_documentos.py     # Widgets para listar, adicionar, remover arquivos
+├── core/
+│   ├── __init__.py
+│   ├── pipeline.py
+│   ├── llm_handler.py
+│   ├── embedding_manager.py
+│   └── tests/
+│       ├── __init__.py
+│       ├── test_pipeline.py
+│       ├── test_llm_handler.py
+│       └── test_embedding_manager.py
 |
-├── nucleo_rag/                     # Lógica principal do RAG e gerenciamento de dados
-│   ├── processador_documentos.py   # Carregar, parsear PDFs, extrair texto, dividir em chunks
-│   ├── gerenciador_embeddings.py   # Gerar embeddings
-│   ├── banco_sqlite.py             # Interação com SQLite (tabelas de metadados e vetores)
-│   ├── manipulador_llm.py          # Comunicação com o Ollama
-│   ├── pipeline_rag.py             # Orquestra o fluxo de consulta e geração
-│   └── gerenciador_arquivos.py     # Lógica para upload, salvar, listar e deletar arquivos físicos
+├── data_access/
+│   ├── __init__.py
+│   ├── vector_db.py
+│   ├── file_system_manager.py
+│   └── tests/
+│       ├── __init__.py
+│       ├── test_vector_db.py
+│       └── test_file_system_manager.py
 |
-├── dados/                            # Onde os dados da aplicação são armazenados
-│   ├── documentos_usuario/           # Pasta para armazenar os PDFs carregados
-│   └── rag_database.db               # Arquivo do banco de dados SQLite
+├── processing/
+│   ├── __init__.py
+│   ├── document_parser.py  # Lógica principal de parsing
+│   ├── pdf_processor.py    # Funções específicas para PDF
+│   ├── epub_processor.py   # Funções específicas para ePub
+│   ├── text_splitter.py    # Anteriormente: text_utils.py (focado em chunking)
+│   └── tests/
+│       ├── __init__.py
+│       ├── test_document_parser.py
+│       ├── test_pdf_processor.py
+│       ├── test_epub_processor.py
+│       └── test_text_splitter.py
 |
-├── config.py                       # Configurações (ex: URL do Ollama, nome do modelo, caminho da DB)
-└── requirements.txt                # Dependências Python (customtkinter, PyMuPDF, sentence-transformers, ollama, etc.)
+└── (futuramente: ui/, assets/, etc.)
 

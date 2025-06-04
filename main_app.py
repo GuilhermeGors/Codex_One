@@ -4,12 +4,13 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox, ttk
 import os
 import threading
-import uuid # <--- CORREÇÃO 1: Adicionado import uuid
+import uuid 
 from typing import List, Dict, Optional, Any, Callable 
 
-from nucleo_rag import gerenciador_arquivos
-from nucleo_rag import banco_vetorial_chroma 
-from nucleo_rag import pipeline_rag # Certifique-se que indexar_documento_pdf aqui aceita 3 args
+# Importar dos novos locais
+from data_access import file_system_manager
+from data_access import vector_db 
+from core import pipeline # Anteriormente nucleo_rag.pipeline
 from config import ensure_directories_exist, DOCUMENTS_DIR, OLLAMA_MODEL
 
 ctk.set_appearance_mode("System")  
@@ -24,7 +25,7 @@ class CodexOneApp(ctk.CTk):
         self.minsize(800, 600)
 
         ensure_directories_exist() 
-        self.db_collection = banco_vetorial_chroma.initialize_vector_db()
+        self.db_collection = vector_db.initialize_vector_db()
         if not self.db_collection:
             messagebox.showerror("Erro Crítico", 
                                  "Não foi possível inicializar a base de dados vetorial (ChromaDB).\n"
@@ -61,8 +62,8 @@ class CodexOneApp(ctk.CTk):
         self.scrollbar_tree.grid(row=1, column=2, padx=(0,10), pady=5, sticky="ns")
         self.tree_documentos.configure(yscrollcommand=self.scrollbar_tree.set)
 
-        self.botao_carregar_pdf = ctk.CTkButton(self.frame_esquerda, text="Carregar PDF", command=self.iniciar_carregamento_pdf)
-        self.botao_carregar_pdf.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+        self.botao_carregar_arquivo = ctk.CTkButton(self.frame_esquerda, text="Carregar Documento", command=self.iniciar_carregamento_arquivo) # Renomeado
+        self.botao_carregar_arquivo.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
 
         self.botao_remover_pdf = ctk.CTkButton(self.frame_esquerda, text="Remover Selecionado", command=self.remover_documento_selecionado, fg_color="tomato")
         self.botao_remover_pdf.grid(row=2, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
@@ -100,11 +101,10 @@ class CodexOneApp(ctk.CTk):
         
         self.atualizar_lista_documentos()
 
-    def _safe_update_gui(self, func: Callable, *args, **kwargs): # <--- CORREÇÃO 3: Adicionado **kwargs
+    def _safe_update_gui(self, func: Callable, *args, **kwargs):
         """Chama uma função de atualização da GUI de forma segura a partir de uma thread."""
         try:
             if self.winfo_exists(): 
-                # Usar lambda para passar corretamente args e kwargs para a função agendada
                 self.after(0, lambda func=func, args=args, kwargs=kwargs: func(*args, **kwargs))
         except Exception as e:
             print(f"Erro ao agendar atualização da GUI: {e}")
@@ -114,42 +114,45 @@ class CodexOneApp(ctk.CTk):
         if progresso < 0: 
             self.status_bar_esquerda.configure(text=f"Erro: {mensagem}", text_color="tomato")
             self.progress_bar_indexacao.set(0)
-            self.botao_carregar_pdf.configure(state="normal") 
+            self.botao_carregar_arquivo.configure(state="normal") 
         elif progresso >= 1.0:
             self.status_bar_esquerda.configure(text=mensagem, text_color=ctk.ThemeManager.theme["CTkLabel"]["text_color"])
             self.progress_bar_indexacao.set(1.0)
             self.after(2000, lambda: self.progress_bar_indexacao.set(0)) 
-            self.botao_carregar_pdf.configure(state="normal")
+            self.botao_carregar_arquivo.configure(state="normal")
         else:
             self.status_bar_esquerda.configure(text=f"{mensagem} ({progresso*100:.0f}%)", text_color=ctk.ThemeManager.theme["CTkLabel"]["text_color"])
             self.progress_bar_indexacao.set(progresso)
 
-    def _tarefa_indexacao_pdf(self, caminho_fisico_pdf: str, nome_original_pdf: str):
-        # Certifique-se que pipeline_rag.indexar_documento_pdf aceita 3 argumentos
-        # incluindo o callback de progresso.
-        sucesso_indexacao = pipeline_rag.indexar_documento_pdf(
-            caminho_fisico_pdf, 
-            nome_original_pdf,
+    def _tarefa_indexacao_documento(self, caminho_fisico_doc: str, nome_original_doc: str): # Renomeado
+        """Função que executa a indexação (para ser rodada em uma thread)."""
+        # Usar a função renomeada do pipeline
+        sucesso_indexacao = pipeline.indexar_documento( 
+            caminho_fisico_doc, 
+            nome_original_doc,
             lambda msg, prog: self._safe_update_gui(self.gui_atualizar_progresso_indexacao, msg, prog)
         )
         
         if sucesso_indexacao:
-            self._safe_update_gui(messagebox.showinfo, "Sucesso", f"Documento '{nome_original_pdf}' carregado e indexado com sucesso!")
+            self._safe_update_gui(messagebox.showinfo, "Sucesso", f"Documento '{nome_original_doc}' carregado e indexado com sucesso!")
             self._safe_update_gui(self.atualizar_lista_documentos)
         else:
-            self._safe_update_gui(messagebox.showerror, "Erro de Indexação", f"Falha ao indexar o documento '{nome_original_pdf}'. Verifique os logs do console.")
+            self._safe_update_gui(messagebox.showerror, "Erro de Indexação", f"Falha ao indexar o documento '{nome_original_doc}'. Verifique os logs do console.")
         
-        # Correção 3 aplicada aqui também para o configure
-        self._safe_update_gui(self.botao_carregar_pdf.configure, state="normal")
+        self._safe_update_gui(self.botao_carregar_arquivo.configure, state="normal")
         if sucesso_indexacao:
              self._safe_update_gui(self.status_bar_esquerda.configure, text="Pronto.")
 
 
-    def iniciar_carregamento_pdf(self):
-        self.status_bar_esquerda.configure(text="Selecionando arquivo PDF...")
+    def iniciar_carregamento_arquivo(self): # Renomeado de iniciar_carregamento_pdf
+        """Inicia o processo de seleção e carregamento de PDF ou ePub em uma nova thread."""
+        self.status_bar_esquerda.configure(text="Selecionando arquivo...")
         filepath = filedialog.askopenfilename(
-            title="Selecionar Arquivo PDF",
-            filetypes=(("Arquivos PDF", "*.pdf"), ("Todos os arquivos", "*.*"))
+            title="Selecionar Documento (PDF ou ePub)",
+            filetypes=(("Documentos Suportados", "*.pdf *.epub"), # Atualizado para incluir ePub
+                       ("Arquivos PDF", "*.pdf"), 
+                       ("Arquivos ePub", "*.epub"),
+                       ("Todos os arquivos", "*.*"))
         )
         if not filepath:
             self.status_bar_esquerda.configure(text="Nenhum arquivo selecionado.")
@@ -159,7 +162,7 @@ class CodexOneApp(ctk.CTk):
         
         self.status_bar_esquerda.configure(text=f"Preparando '{original_filename}'...")
         self.update_idletasks()
-        caminho_salvo = gerenciador_arquivos.save_uploaded_file(filepath, original_filename)
+        caminho_salvo = file_system_manager.save_uploaded_file(filepath, original_filename)
         
         if not caminho_salvo:
             messagebox.showerror("Erro ao Salvar", f"Não foi possível salvar o arquivo '{original_filename}'.")
@@ -168,12 +171,12 @@ class CodexOneApp(ctk.CTk):
         
         nome_arquivo_salvo_no_sistema = os.path.basename(caminho_salvo)
 
-        self.botao_carregar_pdf.configure(state="disabled")
+        self.botao_carregar_arquivo.configure(state="disabled")
         self.progress_bar_indexacao.set(0) 
         self.status_bar_esquerda.configure(text=f"Iniciando indexação de '{nome_arquivo_salvo_no_sistema}'...")
 
         thread_indexacao = threading.Thread(
-            target=self._tarefa_indexacao_pdf, 
+            target=self._tarefa_indexacao_documento, # Renomeado
             args=(caminho_salvo, nome_arquivo_salvo_no_sistema), 
             daemon=True 
         )
@@ -195,13 +198,13 @@ class CodexOneApp(ctk.CTk):
             return
             
         try:
-            documentos_info = banco_vetorial_chroma.get_all_document_infos(self.db_collection)
+            documentos_info = vector_db.get_all_document_infos(self.db_collection)
             
             if documentos_info:
                 for doc_info in sorted(documentos_info, key=self._get_sort_key_for_documents):
                     nome_exibicao = doc_info.get('nome_arquivo', 'Nome Desconhecido')
                     num_chunks = doc_info.get('numero_chunks', 0)
-                    doc_id_original = str(doc_info.get('doc_id_original', uuid.uuid4())) # <--- CORREÇÃO 1: uuid.uuid4() usado aqui
+                    doc_id_original = str(doc_info.get('doc_id_original', uuid.uuid4())) 
                     self.tree_documentos.insert("", "end", iid=doc_id_original, values=(nome_exibicao, num_chunks))
             self.status_bar_esquerda.configure(text=f"{len(documentos_info) if documentos_info else 0} documentos carregados.")
         except Exception as e:
@@ -233,8 +236,9 @@ class CodexOneApp(ctk.CTk):
         self.status_bar_esquerda.configure(text=f"Removendo '{nome_arquivo_para_mensagem}'...")
         self.update_idletasks()
 
-        sucesso_db = banco_vetorial_chroma.delete_document_chunks(self.db_collection, doc_id_original_para_remover)
-        sucesso_fs = gerenciador_arquivos.delete_saved_file(nome_arquivo_para_mensagem)
+        sucesso_db = vector_db.delete_document_chunks(self.db_collection, doc_id_original_para_remover)
+        # O nome_arquivo_para_mensagem é o que foi exibido, que deve ser o nome do arquivo salvo no sistema
+        sucesso_fs = file_system_manager.delete_saved_file(nome_arquivo_para_mensagem)
 
         if sucesso_db and sucesso_fs:
             messagebox.showinfo("Sucesso", f"Documento '{nome_arquivo_para_mensagem}' removido com sucesso.")
@@ -261,7 +265,10 @@ class CodexOneApp(ctk.CTk):
             for i, fonte_info in enumerate(fontes):
                 texto_fontes += f"Fonte {i+1}:\n"
                 texto_fontes += f"  Arquivo: {fonte_info.get('nome_arquivo', 'N/A')}\n"
-                texto_fontes += f"  Página: {fonte_info.get('pagina', 'N/A')}\n"
+                # Ajustar para 'pagina_ou_secao' e 'titulo_secao' conforme retornado pelo pipeline
+                texto_fontes += f"  Página/Seção: {fonte_info.get('pagina_ou_secao', 'N/A')}\n"
+                if fonte_info.get('titulo_secao'):
+                     texto_fontes += f"  Título Seção: {fonte_info.get('titulo_secao')}\n"
                 if fonte_info.get('titulo_documento'):
                     texto_fontes += f"  Título Doc: {fonte_info.get('titulo_documento')}\n"
                 if fonte_info.get('autor_documento'):
@@ -274,7 +281,7 @@ class CodexOneApp(ctk.CTk):
 
     def _tarefa_pesquisa_resposta(self, pergunta: str):
         try:
-            resultado = pipeline_rag.pesquisar_e_responder(pergunta)
+            resultado = pipeline.pesquisar_e_responder(pergunta)
             if resultado:
                 self._safe_update_gui(self.exibir_resposta_e_fontes, 
                                       resultado.get("resposta", "Erro ao obter resposta."), 
@@ -287,7 +294,6 @@ class CodexOneApp(ctk.CTk):
             self._safe_update_gui(self.exibir_resposta_e_fontes, f"Erro crítico ao processar sua pergunta: {e}", [])
             self._safe_update_gui(messagebox.showerror, "Erro Crítico", f"Um erro inesperado ocorreu: {e}")
         finally:
-            # Correção 3 aplicada aqui também
             self._safe_update_gui(self.botao_enviar.configure, state="normal")
             self._safe_update_gui(self.entry_pergunta.configure, state="normal")
 
