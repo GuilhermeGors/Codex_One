@@ -72,7 +72,7 @@ A solução é baseada na arquitetura **RAG (Retrieval‑Augmented Generation)**
 ## ⚙️ 6. Configuração e Dependências
 
 ```bash
-git clone https://URL_DO_SEU_REPOSITORIO/codex-one.git
+git clone https://github.com/GuilhermeGors/Codex_One.git
 cd codex-one
 
 # Crie e ative o ambiente virtual:
