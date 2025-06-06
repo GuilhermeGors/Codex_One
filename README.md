@@ -60,7 +60,7 @@ A solução é baseada na arquitetura **RAG (Retrieval‑Augmented Generation)**
 |------------------------|-------------------------------------------|
 | Linguagem              | Python 3.10+                              |
 | Interface Gráfica      | CustomTkinter                             |
-| IA &                   | Ollama (llama3:8b-instruct-q5_k_m)        |
+| IA                     | Ollama (llama3:8b-instruct-q5_k_m)        |
 | PLN                    | Sentence‑Transformers                     |
 | Banco Vetorial         | ChromaDB                                  |
 | Extração de Ficheiros  | PyMuPDF, EbookLib, BeautifulSoup4         |
