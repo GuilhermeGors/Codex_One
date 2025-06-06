@@ -89,14 +89,15 @@ pip install -r requirements.txt
 ```
 ## 🔗 14. Recursos Adicionais
 
-- 📘 **O que é Retrieval‑Augmented Generation (RAG)?** (AWS): conceitos e funcionamento básico do RAG — [leia aqui](https://aws.amazon.com/what-is/retrieval-augmented-generation/) :contentReference[oaicite:0]{index=0}  
-- 🧠 **RAG explicado com aplicações empresariais** (NVIDIA Blog): pipeline de RAG para dados corporativos — [leia aqui](https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/) :contentReference[oaicite:1]{index=1}  
-- 🔧 **Guia oficial do ChromaDB**: documentação para instalação, uso e arquitetura do ChromaDB — [leia aqui](https://docs.trychroma.com/getting-started) :contentReference[oaicite:2]{index=2}  
-- 🛠️ **Tutorial Ollama (KDnuggets)**: como executar LLMs localmente com o Ollama — [leia aqui](https://www.kdnuggets.com/ollama-tutorial-running-llms-locally-made-super-simple) :contentReference[oaicite:3]{index=3}  
-- 🎨 **CustomTkinter – docs oficiais**: widgets modernos para GUIs em Python — [leia aqui](https://customtkinter.tomschimansky.com/) :contentReference[oaicite:4]{index=4}  
-- 📘 **ChromaDB tutorial (DataCamp)**: guia passo a passo de uso no Python — [leia aqui](https://www.datacamp.com/tutorial/chromadb-tutorial-step-by-step-guide) :contentReference[oaicite:5]{index=5}  
-- 🚀 **Construindo soluçōes RAG na nuvem (AWS Bedrock)**: arquitetura completa RAG com AWS Bedrock — [leia aqui](https://aws.amazon.com/blogs/machine-learning/build-an-end-to-end-rag-solution-using-knowledge-bases-for-amazon-bedrock-and-aws-cloudformation/) :contentReference[oaicite:6]{index=6}  
-- 🧩 **Implementando RAG empresarial (NVIDIA)**: visão geral de uso em escala corporativa — [leia aqui](https://developer.nvidia.com/blog/build-enterprise-retrieval-augmented-generation-apps-with-nvidia-retrieval-qa-embedding-model/) :contentReference[oaicite:7]{index=7}
+- 📘 **Ollama – Configuração e uso local**: documentação oficial para instalar e executar LLMs localmente com Ollama — [leia aqui](https://github.com/ollama/ollama) :contentReference[oaicite:0]{index=0}  
+- 🛠️ **Tutorial Ollama (KDnuggets)**: passo a passo para rodar modelos localmente com Ollama — [leia aqui](https://www.kdnuggets.com/ollama-tutorial-running-llms-locally-made-super-simple) :contentReference[oaicite:1]{index=1}  
+- 🔧 **ChromaDB – Guia para uso local**: documentação oficial para instalar e usar como banco vetorial local — [leia aqui](https://docs.trychroma.com/getting-started) :contentReference[oaicite:2]{index=2}  
+- 📚 **ChromaDB local com Python (Real Python)**: tutorial explicativo para embeddings e buscas locais — [leia aqui](https://realpython.com/chromadb-vector-database/) :contentReference[oaicite:3]{index=3}  
+- 🧠 **Sentence-Transformers – Documentação & Quickstart**: guia para gerar embeddings localmente em Python — [leia aqui](https://sbert.net/) :contentReference[oaicite:4]{index=4}  
+- 💡 **Uso de embeddings locais com SBERT**: tutorial Medium explicando os prós e contras do processamento local — [leia aqui](https://medium.com/hackademia/how-to-use-local-embedding-models-and-sentence-transformers-c0bf80a00ce2) :contentReference[oaicite:5]{index=5}  
+- 📄 **PyMuPDF – Extração de texto local (PDF/ePub)**: documentação e tutoriais para uso offline com PyMuPDF — [leia aqui](https://pymupdf.readthedocs.io/en/latest/tutorial.html) :contentReference[oaicite:6]{index=6}  
+- 🎨 **CustomTkinter – Interface desktop local**: documentação oficial para construir GUIs locais modernas com Python — [leia aqui](https://customtkinter.tomschimansky.com/) :contentReference[oaicite:7]{index=7}  
+
 
 ## 🛣️ 10. Roadmap
 
