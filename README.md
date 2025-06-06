@@ -86,3 +86,21 @@ source venv/bin/activate
 
 # Instale as dependências:
 pip install -r requirements.txt
+```
+
+## 🛣️ 10. Roadmap
+
+- [ ] **Suporte a novos formatos**  
+  - `.docx`, `.txt`, `.md`
+- [ ] **Extração aprimorada**  
+  - Tabelas  
+  - Imagens (via modelos multimodais)
+- [ ] **Filtragem de busca**  
+  - Permitir seleção de documentos específicos
+- [ ] **Cache de embeddings**  
+  - Evitar reprocessamento de documentos já indexados
+- [ ] **Melhorias na UI/UX**  
+  - Visualização interativa de fontes (ex.: clique para expandir)
+- [ ] **Empacotamento standalone**  
+  - Gerar executável via PyInstaller ou similar
+
