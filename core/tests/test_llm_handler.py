@@ -10,14 +10,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from core import llm_handler 
 from config import OLLAMA_MODEL, OLLAMA_BASE_URL, ensure_directories_exist
 
-# Tentar importar a exceção real para usar nos mocks
 try:
     from ollama import ResponseError as OllamaActualResponseError
 except ImportError:
-    # Fallback se ollama não estiver instalado no ambiente de teste
-    # Os testes que dependem de levantar esta exceção específica podem precisar ser pulados
-    # ou o mock precisará ser mais genérico.
-    class OllamaActualResponseError(Exception): # Definir um fallback que herda de Exception
+
+    class OllamaActualResponseError(Exception):
         def __init__(self, error, status_code):
             super().__init__(error)
             self.error = error
@@ -40,7 +37,7 @@ class TestLLMHandler(unittest.TestCase):
         print("Prompt construído com sucesso.")
 
     @patch('core.llm_handler.ollama') 
-    def test_gerar_resposta_sucesso(self, mock_ollama_lib): # Argumento mock adicionado
+    def test_gerar_resposta_sucesso(self, mock_ollama_lib):
         print("\nExecutando test_gerar_resposta_sucesso...")
         mock_ollama_lib.chat.return_value = {
             'message': { 'content': ' Paris é a capital. ' }
@@ -51,10 +48,10 @@ class TestLLMHandler(unittest.TestCase):
         print("Geração de resposta (mock) sucesso.")
 
     @patch('core.llm_handler.ollama')
-    def test_gerar_resposta_ollama_response_error_404(self, mock_ollama_lib): # Argumento mock adicionado
+    def test_gerar_resposta_ollama_response_error_404(self, mock_ollama_lib):
         print("\nExecutando test_gerar_resposta_ollama_response_error_404...")
         # Configurar o mock para levantar a exceção importada/definida
-        mock_ollama_lib.ResponseError = OllamaActualResponseError # Para o `except ollama.ResponseError` funcionar
+        mock_ollama_lib.ResponseError = OllamaActualResponseError
         mock_ollama_lib.chat.side_effect = OllamaActualResponseError(
             error="model 'modelo_inexistente' not found", 
             status_code=404
@@ -65,7 +62,7 @@ class TestLLMHandler(unittest.TestCase):
         print("Tratamento de Ollama ResponseError 404 ok.")
 
     @patch('core.llm_handler.ollama')
-    def test_gerar_resposta_connection_error(self, mock_ollama_lib): # Argumento mock adicionado
+    def test_gerar_resposta_connection_error(self, mock_ollama_lib):
         print("\nExecutando test_gerar_resposta_connection_error...")
         mock_ollama_lib.chat.side_effect = ConnectionRefusedError("Falha na conexão")
         resposta = llm_handler.gerar_resposta_com_contexto("P", "C")
@@ -73,7 +70,7 @@ class TestLLMHandler(unittest.TestCase):
         print("Tratamento de ConnectionRefusedError ok.")
 
     @patch('core.llm_handler.ollama')
-    def test_gerar_resposta_outra_excecao_ollama(self, mock_ollama_lib): # Argumento mock adicionado
+    def test_gerar_resposta_outra_excecao_ollama(self, mock_ollama_lib):
         print("\nExecutando test_gerar_resposta_outra_excecao_ollama...")
         mock_ollama_lib.ResponseError = OllamaActualResponseError
         mock_ollama_lib.chat.side_effect = OllamaActualResponseError(

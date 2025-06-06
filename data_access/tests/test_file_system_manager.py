@@ -5,7 +5,6 @@ import os
 import shutil
 import sys
 
-# Adicionar a raiz do projeto ao sys.path para permitir importações de 'config' e 'data_access'
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from data_access import file_system_manager # Importa o módulo a ser testado
@@ -15,15 +14,12 @@ class TestFileSystemManager(unittest.TestCase):
 
     def setUp(self):
         """Configura o ambiente de teste antes de cada teste."""
-        # Garante que o diretório de documentos principal exista (criado por config)
         ensure_all_project_dirs_exist()
-        # Diretório de teste específico para uploads temporários, não o DOCUMENTS_DIR principal
         self.temp_upload_dir = "temp_test_uploads_fs_manager"
         os.makedirs(self.temp_upload_dir, exist_ok=True)
         
         # Limpar o DOCUMENTS_DIR real para garantir que os testes sejam isolados
         # CUIDADO: Isto apagará ficheiros em DOCUMENTS_DIR. Use um DOCUMENTS_DIR de teste se preferir.
-        # Por agora, vamos assumir que DOCUMENTS_DIR pode ser limpo para testes.
         if os.path.exists(DOCUMENTS_DIR):
             for item in os.listdir(DOCUMENTS_DIR):
                 item_path = os.path.join(DOCUMENTS_DIR, item)
@@ -66,19 +62,16 @@ class TestFileSystemManager(unittest.TestCase):
         self.assertIsNotNone(saved_path)
         self.assertTrue(os.path.exists(saved_path))
         self.assertEqual(os.path.basename(saved_path), original_name)
-        # Verificar conteúdo (opcional, mas bom)
         with open(saved_path, "r", encoding="utf-8") as f:
             content = f.read()
         self.assertEqual(content, self.test_file1_content)
 
     def test_save_uploaded_file_duplicado(self):
         original_name = "documento_repetido.pdf"
-        # Salvar pela primeira vez
         saved_path1 = file_system_manager.save_uploaded_file(self.temp_file1_path, original_name)
         self.assertIsNotNone(saved_path1)
         self.assertEqual(os.path.basename(saved_path1), original_name)
 
-        # Salvar pela segunda vez com o mesmo nome original
         saved_path2 = file_system_manager.save_uploaded_file(self.temp_file2_path, original_name)
         self.assertIsNotNone(saved_path2)
         self.assertTrue(os.path.exists(saved_path2))
@@ -110,8 +103,6 @@ class TestFileSystemManager(unittest.TestCase):
         file_system_manager.save_uploaded_file(self.temp_file1_path, "para_deletar.pdf")
         self.assertTrue(file_system_manager.delete_saved_file("para_deletar.pdf"))
         self.assertFalse(os.path.exists(os.path.join(DOCUMENTS_DIR, "para_deletar.pdf")))
-        
-        # Tentar deletar ficheiro inexistente
         self.assertFalse(file_system_manager.delete_saved_file("nao_existe_para_deletar.pdf"))
 
 if __name__ == '__main__':

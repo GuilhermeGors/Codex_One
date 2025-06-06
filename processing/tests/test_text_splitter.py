@@ -1,13 +1,11 @@
 # codex_one/processing/tests/test_text_splitter.py
 
 import unittest
-# Ajustar importação para refletir a nova estrutura de pastas e a execução a partir da raiz
 from processing.text_splitter import dividir_texto_em_chunks
-# Para aceder a config.py da raiz do projeto
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))) # Adiciona a raiz do projeto ao sys.path
-from config import CHUNK_SIZE, CHUNK_OVERLAP # Agora pode importar de config
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from config import CHUNK_SIZE, CHUNK_OVERLAP
 
 class TestTextSplitter(unittest.TestCase):
 
@@ -23,7 +21,7 @@ class TestTextSplitter(unittest.TestCase):
         if len(chunks) > 1:
             overlap_calculado = len(chunks[0]["texto_chunk"]) + len(chunks[1]["texto_chunk"]) - len(chunks[0]["texto_chunk"] + chunks[1]["texto_chunk"][10:])
             # A lógica de sobreposição exata pode ser complexa de testar sem replicar a lógica interna,
-            # mas podemos verificar se o segundo chunk começa com parte do final do primeiro.
+            # mas pode-se verificar se o segundo chunk começa com parte do final do primeiro.
             # Este é um teste simples, a lógica de sobreposição no código original é mais direta.
             # O importante é que os chunks são gerados.
             self.assertTrue(chunks[1]["texto_chunk"].startswith(chunks[0]["texto_chunk"][50-10:]))

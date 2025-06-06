@@ -3,8 +3,6 @@
 import os
 import shutil
 from typing import List, Optional
-
-# Ajustar importação de config para refletir que config.py está na raiz do projeto
 from config import DOCUMENTS_DIR 
 
 def ensure_documents_directory_exists():

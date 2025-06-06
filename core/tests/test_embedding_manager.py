@@ -3,12 +3,9 @@
 import unittest
 import sys
 import os
-
-# Adicionar a raiz do projeto ao sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
-
-from core import embedding_manager # Importa o módulo a ser testado
-from config import SENTENCE_TRANSFORMER_MODEL # Para referência no teste
+from core import embedding_manager 
+from config import SENTENCE_TRANSFORMER_MODEL
 
 class TestEmbeddingManager(unittest.TestCase):
 
@@ -40,7 +37,7 @@ class TestEmbeddingManager(unittest.TestCase):
         self.assertEqual(len(embeddings_gerados), len(textos_para_teste), "Número incorreto de embeddings gerados.")
         
         dimensao_esperada = embedding_manager.obter_dimensao_embedding()
-        if dimensao_esperada: # Só verifica a dimensão se conseguimos obtê-la
+        if dimensao_esperada:
             for emb in embeddings_gerados:
                 self.assertIsInstance(emb, list, "Cada embedding deveria ser uma lista.")
                 self.assertEqual(len(emb), dimensao_esperada, f"Dimensão incorreta do embedding. Esperado {dimensao_esperada}, obtido {len(emb)}.")
@@ -55,8 +52,7 @@ class TestEmbeddingManager(unittest.TestCase):
 
     def test_04_modelo_ja_carregado(self):
         print("\nExecutando test_04_modelo_ja_carregado...")
-        # A primeira chamada em setUpClass já carregou o modelo.
-        # Esta chamada deve usar o modelo em cache.
+
         model_instance1 = embedding_manager.carregar_modelo_embedding()
         model_instance2 = embedding_manager.carregar_modelo_embedding()
         self.assertIs(model_instance1, model_instance2, "Deveria retornar a mesma instância do modelo em cache.")

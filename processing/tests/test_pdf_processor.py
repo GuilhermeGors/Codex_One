@@ -1,11 +1,11 @@
 # codex_one/processing/tests/test_pdf_processor.py
 import unittest
 import os
-import fitz # PyMuPDF
+import fitz
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from processing.pdf_processor import extrair_conteudo_pdf
-from config import DOCUMENTS_DIR # Para criar ficheiros de teste
+from config import DOCUMENTS_DIR
 
 class TestPdfProcessor(unittest.TestCase):
     def setUp(self):
@@ -26,7 +26,6 @@ class TestPdfProcessor(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.pdf_path):
             os.remove(self.pdf_path)
-        # Considerar remover self.test_dir se for criado apenas para testes e estiver vazio
 
     def test_extracao_pdf_sucesso(self):
         conteudo, meta = extrair_conteudo_pdf(self.pdf_path)
@@ -44,7 +43,7 @@ class TestPdfProcessor(unittest.TestCase):
             callback_chamadas.append((atual, total))
         
         extrair_conteudo_pdf(self.pdf_path, page_progress_callback=_callback)
-        self.assertEqual(len(callback_chamadas), 2) # Chamado para cada página
+        self.assertEqual(len(callback_chamadas), 2)
         self.assertEqual(callback_chamadas[0], (1, 2))
         self.assertEqual(callback_chamadas[1], (2, 2))
 

@@ -2,8 +2,6 @@
 
 import os
 from typing import List, Dict, Optional, Any, Callable
-
-# Importar processadores específicos e utilitários de texto
 from .pdf_processor import extrair_conteudo_pdf
 from .epub_processor import extrair_conteudo_epub
 from .text_splitter import dividir_texto_em_chunks
@@ -48,24 +46,20 @@ def processar_documento_ficheiro(
 
     for item_conteudo in conteudos_extraidos:
         texto_item = item_conteudo["texto_conteudo"]
-        # 'numero_pagina_ou_secao' e 'titulo_secao' vêm de cada processador específico
         id_item_no_doc = item_conteudo["numero_pagina_ou_secao"] 
         titulo_item_no_doc = item_conteudo["titulo_secao"]
 
         if not texto_item.strip():
-            continue # Pula páginas/seções vazias
+            continue
 
-        # Metadados base que serão passados para a função de chunking
-        # e depois enriquecidos por ela.
         metadados_base_para_chunking = {
             "nome_arquivo_original": nome_base_arquivo,
-            "caminho_completo_original": caminho_arquivo, # Pode ser útil para referências futuras
+            "caminho_completo_original": caminho_arquivo,
             "id_pagina_ou_secao_original": id_item_no_doc,
             "titulo_pagina_ou_secao_original": titulo_item_no_doc,
-            # Metadados do documento inteiro
             "titulo_documento": metadados_doc_comuns.get("titulo_documento", ""),
             "autor_documento": metadados_doc_comuns.get("autor_documento", "")
-            # Outros metadados do documento podem ser adicionados aqui se necessário
+            # metadados do doc
         }
         
         chunks_gerados_do_item = dividir_texto_em_chunks(

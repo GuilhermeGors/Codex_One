@@ -6,11 +6,9 @@ import os
 import threading
 import uuid 
 from typing import List, Dict, Optional, Any, Callable 
-
-# Importar dos novos locais
 from data_access import file_system_manager
 from data_access import vector_db 
-from core import pipeline # Anteriormente nucleo_rag.pipeline
+from core import pipeline
 from config import ensure_directories_exist, DOCUMENTS_DIR, OLLAMA_MODEL
 
 ctk.set_appearance_mode("System")  
@@ -44,7 +42,7 @@ class CodexOneApp(ctk.CTk):
 
         self.frame_direita = ctk.CTkFrame(self)
         self.frame_direita.grid(row=0, column=1, padx=(0,10), pady=10, sticky="nsew")
-        self.frame_direita.grid_rowconfigure(1, weight=1) 
+        self.frame_direita.grid_rowconfigure(3, weight=1)
         self.frame_direita.grid_columnconfigure(0, weight=1)
 
         # --- Widgets no Frame da Esquerda ---
@@ -75,18 +73,24 @@ class CodexOneApp(ctk.CTk):
         self.status_bar_esquerda = ctk.CTkLabel(self.frame_esquerda, text="Pronto.", anchor="w")
         self.status_bar_esquerda.grid(row=4, column=0, columnspan=3, padx=10, pady=(0,10), sticky="ew")
 
-        # --- Widgets no Frame da Direita ---
         self.label_chat = ctk.CTkLabel(self.frame_direita, text="Faça sua Pergunta ao Codex One", font=ctk.CTkFont(size=16, weight="bold"))
         self.label_chat.grid(row=0, column=0, padx=10, pady=(10,5), sticky="ew")
 
-        self.textbox_resposta = ctk.CTkTextbox(self.frame_direita, wrap="word", state="disabled", height=200)
-        self.textbox_resposta.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
+        self.panedwindow_resposta_fontes = ttk.PanedWindow(self.frame_direita, orient="vertical")
+        self.panedwindow_resposta_fontes.grid(row=3, column=0, padx=10, pady=5, sticky="nsew")
 
-        self.label_fontes = ctk.CTkLabel(self.frame_direita, text="Fontes Relevantes:", font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
-        self.label_fontes.grid(row=2, column=0, padx=10, pady=(10,0), sticky="ew")
-        
-        self.textbox_fontes = ctk.CTkTextbox(self.frame_direita, wrap="word", state="disabled", height=100)
-        self.textbox_fontes.grid(row=3, column=0, padx=10, pady=5, sticky="nsew")
+        self.frame_resposta = ctk.CTkFrame(self.panedwindow_resposta_fontes)
+        self.frame_fontes = ctk.CTkFrame(self.panedwindow_resposta_fontes)
+        self.panedwindow_resposta_fontes.add(self.frame_resposta, weight=3)
+        self.panedwindow_resposta_fontes.add(self.frame_fontes, weight=2)
+
+        self.textbox_resposta = ctk.CTkTextbox(self.frame_resposta, wrap="word", state="disabled", height=200)
+        self.textbox_resposta.pack(fill="both", expand=True)
+        self.label_fontes = ctk.CTkLabel(self.frame_fontes, text="Fontes Relevantes:", font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
+        self.label_fontes.pack(fill="x", padx=5, pady=(5, 0))
+
+        self.textbox_fontes = ctk.CTkTextbox(self.frame_fontes, wrap="word", state="disabled", height=100)
+        self.textbox_fontes.pack(fill="both", expand=True)
 
         self.frame_entrada_pergunta = ctk.CTkFrame(self.frame_direita, fg_color="transparent")
         self.frame_entrada_pergunta.grid(row=4, column=0, padx=10, pady=(5,10), sticky="ew")

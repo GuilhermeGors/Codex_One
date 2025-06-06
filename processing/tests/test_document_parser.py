@@ -15,7 +15,7 @@ class TestDocumentParser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         ensure_directories_exist()
-        cls.test_dir = os.path.join(DOCUMENTS_DIR, "parser_tests") # Subpasta para testes
+        cls.test_dir = os.path.join(DOCUMENTS_DIR, "parser_tests")
         if os.path.exists(cls.test_dir):
             shutil.rmtree(cls.test_dir)
         os.makedirs(cls.test_dir, exist_ok=True)
@@ -50,12 +50,11 @@ class TestDocumentParser(unittest.TestCase):
         book_epub.add_item(c1_epub)
         book_epub.add_item(c2_epub)
         
-        # Itens de navegação que não devem ser contados como conteúdo principal pelo epub_processor
         nav_doc = epub.EpubNav(uid='nav_parser', file_name='nav_parser.xhtml')
         book_epub.add_item(nav_doc)
         book_epub.add_item(epub.EpubNcx())
 
-        book_epub.spine = [c1_epub, c2_epub] # Apenas os capítulos de conteúdo na espinha
+        book_epub.spine = [c1_epub, c2_epub]
         book_epub.toc = (epub.Link('c1.xhtml', 'Capítulo 1', 'c1'), epub.Link('c2.xhtml', 'Capítulo 2', 'c2'))
         epub.write_epub(self.epub_path, book_epub, {})
 
@@ -65,7 +64,7 @@ class TestDocumentParser(unittest.TestCase):
         chunks = processar_documento_ficheiro(self.pdf_path)
         self.assertIsNotNone(chunks, "Processamento de PDF não deveria retornar None.")
         self.assertTrue(len(chunks) > 0, "Deveria haver chunks para o PDF.")
-        if chunks: # Adicionar verificação
+        if chunks:
             self.assertEqual(chunks[0]['metadados_chunk']['titulo_documento'], "PDF Parser Main Test")
             self.assertIn("Conteúdo PDF para parser.", chunks[0]['texto_chunk'])
 
@@ -74,14 +73,12 @@ class TestDocumentParser(unittest.TestCase):
         chunks = processar_documento_ficheiro(self.epub_path)
         self.assertIsNotNone(chunks, "Processamento de ePub não deveria retornar None.")
         self.assertTrue(len(chunks) > 0, "Deveria haver chunks para o ePub.")
-        if chunks: # Adicionar verificação
+        if chunks:
             self.assertEqual(chunks[0]['metadados_chunk']['titulo_documento'], "ePub Parser Main Test")
-            # Verificar se o conteúdo de ambas as seções está presente nos chunks
             texto_completo_chunks = " ".join([c['texto_chunk'] for c in chunks])
             self.assertIn("Conteúdo ePub para parser, seção um.", texto_completo_chunks)
             self.assertIn("Conteúdo ePub para parser, seção dois.", texto_completo_chunks)
             
-            # Verificar se os metadados da primeira seção estão corretos
             meta_primeiro_chunk = chunks[0]['metadados_chunk']
             self.assertEqual(meta_primeiro_chunk.get('id_pagina_ou_secao_original'), 1)
 
@@ -104,7 +101,7 @@ class TestDocumentParser(unittest.TestCase):
         
         processar_documento_ficheiro(self.pdf_path, progress_callback_gui=_callback)
         self.assertTrue(len(callback_chamadas) > 0, "Callback não foi chamado para PDF.")
-        if callback_chamadas: # Adicionar verificação
+        if callback_chamadas:
              self.assertEqual(callback_chamadas[-1], (1,1), "Callback final do PDF incorreto (esperado 1 página).")
 
         print(f"\n[TestDocumentParser] Testando ePub com callback: {self.epub_path}")
@@ -114,7 +111,7 @@ class TestDocumentParser(unittest.TestCase):
             callback_chamadas_epub.append((atual, total))
         processar_documento_ficheiro(self.epub_path, progress_callback_gui=_callback_epub)
         self.assertTrue(len(callback_chamadas_epub) > 0, "Callback não foi chamado para ePub.")
-        if callback_chamadas_epub: # Adicionar verificação
+        if callback_chamadas_epub:
             self.assertEqual(callback_chamadas_epub[-1], (2,2), "Callback final do ePub incorreto (esperado 2 seções).")
 
 

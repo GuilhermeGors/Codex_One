@@ -3,11 +3,8 @@
 from sentence_transformers import SentenceTransformer
 from typing import List, Optional, Union
 import numpy as np
+from config import SENTENCE_TRANSFORMER_MODEL
 
-# Importar configurações do projeto
-from config import SENTENCE_TRANSFORMER_MODEL # Assumindo que config.py está na raiz do projeto
-
-# Variável global para o modelo, para evitar recarregá-lo a cada chamada
 _model: Optional[SentenceTransformer] = None
 
 def carregar_modelo_embedding() -> Optional[SentenceTransformer]:
@@ -38,11 +35,11 @@ def gerar_embeddings(
         print("Modelo de embedding não está carregado. Não é possível gerar embeddings.")
         return None
     if not textos:
-        # print("Nenhum texto fornecido para gerar embeddings.") # Silenciar para uso em pipeline
+        print("Nenhum texto fornecido para gerar embeddings.")
         return []
 
     try:
-        # print(f"Gerando embeddings para {len(textos)} textos (batch_size={batch_size})...") # Silenciar
+        print(f"Gerando embeddings para {len(textos)} textos (batch_size={batch_size})...")
         embeddings_np: Union[np.ndarray, List[np.ndarray]] = modelo.encode(
             textos,
             batch_size=batch_size,
@@ -51,7 +48,7 @@ def gerar_embeddings(
         
         embeddings_list: List[List[float]] = [emb.tolist() for emb in embeddings_np]
         
-        # print(f"Embeddings gerados com sucesso. Dimensão: {len(embeddings_list[0]) if embeddings_list else 'N/A'}") # Silenciar
+        print(f"Embeddings gerados com sucesso. Dimensão: {len(embeddings_list[0]) if embeddings_list else 'N/A'}")
         return embeddings_list
     except Exception as e:
         print(f"Erro ao gerar embeddings: {e}")
@@ -67,7 +64,7 @@ def obter_dimensao_embedding() -> Optional[int]:
             return modelo.get_sentence_embedding_dimension()
         except Exception as e:
             print(f"Erro ao obter a dimensão do embedding via get_sentence_embedding_dimension: {e}")
-            try: # Fallback
+            try:
                 test_embedding = modelo.encode(["teste_dimensao"])
                 return len(test_embedding[0]) if isinstance(test_embedding, list) and test_embedding else None
             except Exception as e2:

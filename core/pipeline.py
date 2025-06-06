@@ -3,19 +3,16 @@
 import os
 import uuid
 from typing import List, Dict, Optional, Any, Callable 
-
-# Importar dos novos locais
 from config import TOP_K_RESULTS, CHROMA_COLLECTION_NAME 
-from processing import document_parser # Alterado de ..processing para processing (se executado da raiz)
-from core import embedding_manager    # Alterado de . para core
-from data_access import vector_db     # Alterado de ..data_acces para data_access
-from core import llm_handler          # Alterado de . para core
+from processing import document_parser
+from core import embedding_manager
+from data_access import vector_db
+from core import llm_handler
 
 # Inicializar a base de dados vetorial ao carregar o módulo
-# Esta inicialização pode ser movida para a app principal se preferir mais controle.
 db_collection = vector_db.initialize_vector_db()
 
-def indexar_documento( # Renomeado de indexar_documento_pdf para ser mais genérico
+def indexar_documento(
     caminho_arquivo_completo: str, 
     nome_arquivo_original: str,
     gui_progress_callback: Optional[Callable[[str, float], None]] = None 
@@ -39,7 +36,6 @@ def indexar_documento( # Renomeado de indexar_documento_pdf para ser mais genér
             progresso_parser = (item_atual / total_itens) * 0.60 
             gui_progress_callback(f"Processando doc: item {item_atual}/{total_itens}", progresso_parser)
 
-    # Usar a função renomeada de document_parser
     chunks_info_list = document_parser.processar_documento_ficheiro(
         caminho_arquivo_completo, 
         progress_callback_gui=_parser_progress_adapter # Passando o callback para o parser
@@ -51,7 +47,7 @@ def indexar_documento( # Renomeado de indexar_documento_pdf para ser mais genér
             gui_progress_callback(f"Falha ao processar '{nome_arquivo_original}'.", -1)
         return False
     
-    if not chunks_info_list: # Nenhum chunk extraído
+    if not chunks_info_list:
         print(f"[Pipeline] Nenhum texto extraído para indexação do documento: {nome_arquivo_original}")
         if gui_progress_callback:
             gui_progress_callback(f"Nenhum texto em '{nome_arquivo_original}'.", 1.0)
@@ -79,7 +75,7 @@ def indexar_documento( # Renomeado de indexar_documento_pdf para ser mais genér
 
     # --- Estágio 3: Adição ao Banco de Dados (90% -> 100%) ---
     # Usar o nome_arquivo_original para criar um ID de documento mais estável para deleção.
-    # O UUID garante unicidade se o mesmo nome de arquivo for indexado múltiplas vezes (embora a UI deva prevenir isso).
+    # O UUID garante unicidade se o mesmo nome de arquivo for indexado múltiplas vezes
     doc_id_db = f"docid_{nome_arquivo_original}_{uuid.uuid4().hex[:6]}" 
     
     ids_para_db = []
@@ -91,7 +87,6 @@ def indexar_documento( # Renomeado de indexar_documento_pdf para ser mais genér
         
         meta_db_final = meta_chunk_original.copy()
         meta_db_final['doc_id_original_db'] = doc_id_db # ID do documento no DB
-        # 'nome_arquivo_original' já deve estar em meta_chunk_original
         metadados_para_db.append(meta_db_final)
 
     sucesso_adicao = vector_db.add_chunks_to_collection(
@@ -140,10 +135,9 @@ def pesquisar_e_responder(pergunta_usuario: str) -> Optional[Dict[str, Any]]:
         return {"resposta": "Desculpe, não encontrei informações relevantes nos documentos para responder à sua pergunta.", "fontes": []}
 
     print(f"[Pipeline] Encontrados {len(chunks_similares)} chunks relevantes.")
-    # Log dos chunks pode ser removido ou reduzido para produção
-    # for i, chunk_info in enumerate(chunks_similares):
-    #     print(f"  Chunk {i+1} (ID: {chunk_info['id_chunk']}, Dist: {chunk_info['distancia']:.4f}):")
-    #     print(f"    Fonte: {chunk_info['metadatos'].get('nome_arquivo_original', 'N/A')}")
+    for i, chunk_info in enumerate(chunks_similares):
+         print(f"  Chunk {i+1} (ID: {chunk_info['id_chunk']}, Dist: {chunk_info['distancia']:.4f}):")
+         print(f"    Fonte: {chunk_info['metadatos'].get('nome_arquivo_original', 'N/A')}")
 
     contexto_para_llm = "\n\n---\n\n".join(
         [f"Fonte: {ch['metadatos'].get('nome_arquivo_original', 'N/A')}, "
@@ -173,5 +167,5 @@ def pesquisar_e_responder(pergunta_usuario: str) -> Optional[Dict[str, Any]]:
     return {
         "resposta": resposta_llm,
         "fontes": fontes_formatadas,
-        "contexto_bruto_enviado_llm": contexto_para_llm # Para depuração
+        "contexto_bruto_enviado_llm": contexto_para_llm
     }

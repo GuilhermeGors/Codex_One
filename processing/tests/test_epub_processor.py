@@ -54,15 +54,12 @@ class TestEpubProcessor(unittest.TestCase):
         # O NCX é para leitores mais antigos.
         nav_xhtml = epub.EpubNav(uid='nav', file_name='nav.xhtml', title='Navegação')
         # A biblioteca ebooklib pode gerar o conteúdo do nav_xhtml a partir do book.toc
-        # ou você pode construí-lo manualmente se precisar de mais controle.
+        # ou pode construí-lo manualmente se precisar de mais controle.
         # Para este teste, a simples adição do item é suficiente para que ele exista.
         # O processador de ePub deve ignorá-lo como conteúdo principal se não estiver na espinha de conteúdo.
         book.add_item(nav_xhtml)
         book.add_item(epub.EpubNcx())
-
-        # A espinha (spine) define a ordem de leitura linear dos itens de conteúdo
-        # Deve incluir apenas os itens que são parte do fluxo principal de leitura.
-        book.spine = [c1, c2] # Apenas os capítulos de conteúdo
+        book.spine = [c1, c2]
         
         try:
             epub.write_epub(self.epub_path, book, {"epub3_pages": False, "epub2_guide": False}) # Opções para simplificar
@@ -84,16 +81,14 @@ class TestEpubProcessor(unittest.TestCase):
         self.assertIsNotNone(conteudo, "Conteúdo extraído não deveria ser None.")
         self.assertIsNotNone(meta, "Metadados extraídos não deveriam ser None.")
         
-        # Esperamos 2 seções de conteúdo (c1, c2) que estão na espinha e são ITEM_DOCUMENT
         self.assertEqual(len(conteudo), 2, f"Esperado 2 seções de conteúdo, obtido {len(conteudo)}")
         
         if len(conteudo) == 2:
             self.assertIn("Conteúdo do primeiro capítulo", conteudo[0]['texto_conteudo'])
-            # O título da seção pode vir do <title> HTML, <h1>, ou do nome do ficheiro
             self.assertTrue(
                 "Título Visível Cap 1" in conteudo[0]['titulo_secao'] or \
                 "Capítulo 1 HTML Title" in conteudo[0]['titulo_secao'] or \
-                "Chap 01" in conteudo[0]['titulo_secao'] # Fallback do nome do ficheiro
+                "Chap 01" in conteudo[0]['titulo_secao']
             )
 
             self.assertIn("Conteúdo do segundo capítulo", conteudo[1]['texto_conteudo'])

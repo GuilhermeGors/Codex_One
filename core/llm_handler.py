@@ -2,8 +2,6 @@
 
 import ollama
 from typing import Optional, List, Dict, Any
-
-# Importar configurações do projeto
 from config import OLLAMA_BASE_URL, OLLAMA_MODEL 
 
 def construir_prompt_para_llm(pergunta_usuario: str, contexto_chunks: str) -> str:
@@ -35,9 +33,7 @@ def gerar_resposta_com_contexto(pergunta_usuario: str, contexto_chunks: str) -> 
     print(f"\n[LLM HANDLER] Enviando prompt para Ollama (modelo: {OLLAMA_MODEL})...")
 
     try:
-        # A biblioteca 'ollama' usa OLLAMA_HOST (ex: http://localhost:11434) se definido,
-        # ou o padrão. OLLAMA_BASE_URL em config.py é para referência ou se precisarmos
-        # instanciar um cliente explicitamente: client = ollama.Client(host=OLLAMA_BASE_URL)
+
         response = ollama.chat(
             model=OLLAMA_MODEL,
             messages=[

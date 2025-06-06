@@ -15,17 +15,11 @@ from config import DOCUMENTS_DIR, CHROMA_PERSIST_DIR, ensure_directories_exist, 
 from data_access import file_system_manager # CORRIGIDO
 from data_access import vector_db as pipeline_vector_db 
 from processing import document_parser as pipeline_document_parser
-# Não precisamos mockar embedding_manager e llm_handler no nível do módulo pipeline se vamos mockar suas funções internas
-# from core import embedding_manager as pipeline_embedding_manager # Removido ou mockar funções
-# from core import llm_handler as pipeline_llm_handler # Removido ou mockar funções
 
 
 ACTUAL_EMBEDDING_DIM_TEST = 768 
 try:
     from core.embedding_manager import obter_dimensao_embedding
-    # Carregar o modelo de embedding uma vez aqui para obter a dimensão pode ser pesado para testes.
-    # Se o teste não depender da dimensão EXATA, podemos fixar um valor.
-    # Para este teste, vamos manter, mas cientes do impacto.
     dim_test = obter_dimensao_embedding() 
     if dim_test: ACTUAL_EMBEDDING_DIM_TEST = dim_test
 except ImportError: 
@@ -73,17 +67,16 @@ class TestPipeline(unittest.TestCase):
         self.db_collection_test_instance = pipeline.db_collection 
 
         self.assertIsNotNone(self.db_collection_test_instance, "Falha ao reinicializar db_collection em setUp para pipeline.")
-        # Dar um tempo para o sistema de arquivos/DB assentar, especialmente no Windows
         time.sleep(0.2) 
         if self.db_collection_test_instance: 
             self.assertEqual(self.db_collection_test_instance.count(), 0, f"Coleção não está vazia no início. Count: {self.db_collection_test_instance.count()}")
 
         self.pdf_teste_nome = f"pipeline_test_doc_{uuid.uuid4().hex[:4]}.pdf"
-        self.temp_upload_dir_pipeline = "temp_pipeline_uploads_test_temp" # Nome diferente para evitar conflitos
+        self.temp_upload_dir_pipeline = "temp_pipeline_uploads_test_temp"
         os.makedirs(self.temp_upload_dir_pipeline, exist_ok=True)
         self.pdf_teste_caminho_temporario_upload = os.path.join(self.temp_upload_dir_pipeline, self.pdf_teste_nome)
         
-        import fitz # Mover import para dentro do setUp se só for usado aqui
+        import fitz
         doc = fitz.open()
         page = doc.new_page()
         page.insert_text((50, 72), "Conteúdo de teste do pipeline para PDF.")
@@ -100,7 +93,6 @@ class TestPipeline(unittest.TestCase):
 
     def tearDown(self):
         print(f"[TestPipeline] Limpando após teste: {self.id()}")
-        # Limpar ficheiros criados no setUp
         if hasattr(self, 'pdf_teste_caminho_salvo_em_docs') and self.pdf_teste_caminho_salvo_em_docs and os.path.exists(self.pdf_teste_caminho_salvo_em_docs):
             try: os.remove(self.pdf_teste_caminho_salvo_em_docs)
             except Exception as e: print(f"Erro ao limpar {self.pdf_teste_caminho_salvo_em_docs}: {e}")
@@ -117,7 +109,7 @@ class TestPipeline(unittest.TestCase):
         pipeline_vector_db._client = None
         pipeline_vector_db._collection = None
         pipeline.db_collection = None # Resetar a instância no módulo pipeline também
-        time.sleep(0.1) # Dar um tempo para o SO
+        time.sleep(0.1)
 
 
     @patch('core.pipeline.embedding_manager.gerar_embeddings') 

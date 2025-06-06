@@ -18,7 +18,6 @@ def _robust_rmtree(path, max_retries=3, delay=0.5):
         try:
             if os.path.exists(path):
                 shutil.rmtree(path)
-                # print(f"[Vector DB] Diretório '{path}' removido com sucesso.") # Silenciado para main_app
             return True
         except PermissionError as e:
             print(f"[Vector DB] PermissionError ao remover '{path}' (tentativa {i+1}/{max_retries}): {e}")
@@ -28,13 +27,11 @@ def _robust_rmtree(path, max_retries=3, delay=0.5):
                 print(f"[Vector DB] Falha final ao remover '{path}' após {max_retries} tentativas.")
                 return False
         except Exception as e: 
-            # print(f"[Vector DB] Exceção ao remover '{path}': {e}") # Silenciado
             return False 
     return True 
 
 def delete_persistent_storage():
     """Força a remoção da pasta de persistência do ChromaDB."""
-    # print(f"[Vector DB] Tentando remover o diretório de persistência: {CHROMA_PERSIST_DIR}") # Silenciado
     return _robust_rmtree(CHROMA_PERSIST_DIR)
 
 def reset_db_state_for_tests():
@@ -53,7 +50,7 @@ def get_chroma_client(force_new: bool = False) -> Optional[chromadb.ClientAPI]:
         if force_new and _client is not None:
             print("[Vector DB] Forçando nova instância do cliente ChromaDB (resetando _client e _collection).")
             _client = None
-            _collection = None # Resetar _collection se _client for forçado a ser novo
+            _collection = None
 
         try:
             os.makedirs(CHROMA_PERSIST_DIR, exist_ok=True)
@@ -66,52 +63,44 @@ def get_chroma_client(force_new: bool = False) -> Optional[chromadb.ClientAPI]:
 
 def get_or_create_collection(client: chromadb.ClientAPI) -> Optional[chromadb.Collection]:
     global _collection
-    # A verificação _collection.client != client foi REMOVIDA.
-    # Se _collection é None (seja por ser a primeira vez, ou porque _client foi resetado),
-    # então tentamos obter ou criar a coleção.
+
     if _collection is None and client is not None:
         try:
             print(f"[Vector DB] Tentando obter ou criar a coleção: {CHROMA_COLLECTION_NAME}")
-            # O get_or_create_collection é idempotente e seguro.
             _collection = client.get_or_create_collection(
                 name=CHROMA_COLLECTION_NAME,
-                # metadata={"hnsw:space": "cosine"} # Opcional
             )
             print(f"[Vector DB] Coleção '{CHROMA_COLLECTION_NAME}' obtida/criada com sucesso.")
         except Exception as e_get_create:
             print(f"[Vector DB] Erro ao obter ou criar a coleção '{CHROMA_COLLECTION_NAME}': {e_get_create}")
             _collection = None
             
-    # Se _collection já existe e o cliente é o mesmo (ou não foi forçado a ser novo),
-    # esta função retornará a _collection global existente.
     return _collection
 
 def initialize_vector_db(force_new_client: bool = False) -> Optional[chromadb.Collection]:
     """Função principal para inicializar e retornar a coleção."""
     client = get_chroma_client(force_new=force_new_client)
     if client:
-        # Se um novo cliente foi forçado, _collection já terá sido resetado para None em get_chroma_client.
-        # Assim, get_or_create_collection irá obter/criar a coleção com o novo cliente.
+
         return get_or_create_collection(client)
     return None
 
 def delete_all_collections(client: chromadb.ClientAPI):
     if not client:
-        # print("[Vector DB] Cliente ChromaDB não inicializado para delete_all_collections.") # Silenciado
         return
     try:
-        # print("[Vector DB] Tentando deletar todas as coleções via cliente...") # Silenciado
+        print("[Vector DB] Tentando deletar todas as coleções via cliente...")
         collections = client.list_collections()
         for coll_obj in collections:
-            # print(f"[Vector DB] Deletando coleção: {coll_obj.name}") # Silenciado
+            print(f"[Vector DB] Deletando coleção: {coll_obj.name}")
             client.delete_collection(name=coll_obj.name)
         global _collection 
         _collection = None 
-        # print("[Vector DB] Todas as coleções foram deletadas via cliente.") # Silenciado
+        print("[Vector DB] Todas as coleções foram deletadas via cliente.")
     except Exception as e:
         print(f"[Vector DB] Erro ao deletar todas as coleções via cliente: {e}")
 
-# --- Funções CRUD (sem alterações no corpo, apenas logging pode ser ajustado) ---
+# --- Funções CRUD---
 def add_chunks_to_collection(
     collection: chromadb.Collection,
     chunk_texts: List[str],
@@ -186,7 +175,7 @@ def get_all_document_infos(collection: chromadb.Collection) -> List[Dict[str, An
                             "doc_id_original": doc_id_key, "nome_arquivo": nome_arquivo,
                             "autor": meta_list_item.get("autor_documento"), 
                             "titulo": meta_list_item.get("titulo_documento"),
-                            "data_upload": meta_list_item.get("data_upload"), # Se você adicionar este metadado
+                            "data_upload": meta_list_item.get("data_upload"),
                             "numero_chunks": 0
                         }
                     doc_infos[doc_id_key]["numero_chunks"] += 1

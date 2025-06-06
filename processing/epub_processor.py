@@ -18,18 +18,14 @@ def extrair_conteudo_epub(
 
     conteudo_por_secao = []
     
-    # Obter itens da espinha (ordem de leitura)
-    spine_items_meta = livro.spine # Lista de tuplas (item_id, linear_yes_no)
+    spine_items_meta = livro.spine
     
-    # Filtrar para obter apenas os itens de documento reais da espinha
     items_de_conteudo_processaveis = []
     for item_id, _ in spine_items_meta:
         item = livro.get_item_with_id(item_id)
-        # Considerar apenas ITEM_DOCUMENT e excluir 'nav' explicitamente se necessário
         if item and item.get_type() == ebooklib.ITEM_DOCUMENT and item.get_name() != 'nav.xhtml': # Excluir nav.xhtml
             items_de_conteudo_processaveis.append(item)
     
-    # Se a espinha não der resultados úteis, tentar um fallback (menos comum)
     if not items_de_conteudo_processaveis:
         items_de_conteudo_processaveis = [
             item for item in livro.get_items() 
@@ -54,8 +50,7 @@ def extrair_conteudo_epub(
             texto_secao = soup.get_text(separator='\n', strip=True)
             
             titulo_secao_item = ""
-            # Tenta obter o título do item da TOC se disponível e corresponder ao href
-            item_href = item.get_name() # Nome do arquivo do item (ex: chapter1.xhtml)
+            item_href = item.get_name()
             for toc_item in livro.toc:
                 if isinstance(toc_item, epub.Link) and toc_item.href.split('#')[0] == item_href:
                     titulo_secao_item = toc_item.title

@@ -28,31 +28,27 @@ class TestVectorDB(unittest.TestCase):
     def setUpClass(cls):
         print("\n[TestVectorDB] Configurando classe de teste...")
         ensure_directories_exist() 
-        vector_db.delete_persistent_storage() # Tenta apagar a pasta ANTES de tudo
+        vector_db.delete_persistent_storage()
 
     @classmethod
     def tearDownClass(cls):
         print("\n[TestVectorDB] Limpando após todos os testes da classe...")
-        vector_db.delete_persistent_storage() # Tenta apagar a pasta DEPOIS de tudo
+        vector_db.delete_persistent_storage()
 
     def setUp(self):
         print(f"\n[TestVectorDB] Configurando teste: {self.id()}")
         # Forçar um estado completamente limpo para cada teste
-        vector_db.reset_db_state_for_tests() # Apaga pasta e reseta vars globais
+        vector_db.reset_db_state_for_tests()
         
-        # Inicializa para o teste atual, forçando um novo cliente
         self.collection = vector_db.initialize_vector_db(force_new_client=True) 
         self.assertIsNotNone(self.collection, "A coleção ChromaDB não pôde ser inicializada no setUp.")
-        # Pequeno delay para dar tempo ao SO de libertar ficheiros, se necessário
         time.sleep(0.1) 
         self.assertEqual(self.collection.count(), 0, f"A coleção não está vazia no início do teste. Contagem: {self.collection.count()}")
 
     def tearDown(self):
         print(f"[TestVectorDB] Limpando após teste: {self.id()}")
-        # Forçar o reset das variáveis globais para ajudar a libertar o cliente
         vector_db._client = None 
         vector_db._collection = None
-        # A limpeza da pasta de persistência será feita pelo setUp do próximo teste ou tearDownClass
 
     def test_01_initialize_and_add_chunks(self):
         self.assertIsNotNone(self.collection)
@@ -63,7 +59,6 @@ class TestVectorDB(unittest.TestCase):
         
         success = vector_db.add_chunks_to_collection(self.collection, texts, embeddings, metadatas, [chunk_id1])
         self.assertTrue(success, "Falha ao adicionar chunks à coleção.")
-        # Adicionar um pequeno delay antes de verificar a contagem
         time.sleep(0.1)
         self.assertEqual(self.collection.count(), 1, "Contagem incorreta de chunks após adição.")
 
@@ -71,8 +66,6 @@ class TestVectorDB(unittest.TestCase):
         self.assertEqual(len(retrieved['ids'][0]), 1, "Chunk não encontrado após adição.")
         self.assertEqual(retrieved['documents'][0], texts[0])
         self.assertEqual(retrieved['metadatas'][0]["doc_id_original_db"], "test_doc1")
-
-    # ... (Restantes dos testes, adaptando a chave para "doc_id_original_db" nos metadados)
 
     def test_02_find_similar_chunks(self):
         self.assertIsNotNone(self.collection)
@@ -90,7 +83,7 @@ class TestVectorDB(unittest.TestCase):
         
         self.assertIsNotNone(similar_chunks)
         self.assertEqual(len(similar_chunks), 2)
-        if similar_chunks: # Adicionar verificação
+        if similar_chunks:
             self.assertEqual(similar_chunks[0]["id_chunk"], chunk_ids[0])
 
     def test_03_delete_document_chunks(self):
@@ -109,7 +102,7 @@ class TestVectorDB(unittest.TestCase):
             self.collection, ["Manter este chunk"], [[0.9] * ACTUAL_EMBEDDING_DIM], 
             [{"doc_id_original_db": other_doc_id, "nome_arquivo_original": "manter.pdf"}], [other_chunk_id]
         )
-        time.sleep(0.1) # Delay
+        time.sleep(0.1)
         self.assertEqual(self.collection.count(), 3)
 
         success_delete = vector_db.delete_document_chunks(self.collection, doc_id_to_delete)
@@ -131,10 +124,9 @@ class TestVectorDB(unittest.TestCase):
             [{"doc_id_original_db": "doc_info_2", "nome_arquivo_original": "info2.epub", "autor_documento": "Autor2"}],
             [f"d2c1_{uuid.uuid4().hex[:4]}"]
         )
-        time.sleep(0.1) # Delay
+        time.sleep(0.1)
         doc_infos = vector_db.get_all_document_infos(self.collection)
         self.assertEqual(len(doc_infos), 2)
-        # ... (asserções mais detalhadas)
 
     def test_05_get_document_chunk_count(self):
         self.assertIsNotNone(self.collection)
