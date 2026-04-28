@@ -1,15 +1,33 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+venv/
+.env
 
-# VS Code
-.vscode/*
+# Node
+node_modules/
+.next/
+out/
+build/
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Diretório de dados do Codex One
-dados/chroma_db/
-dados/documentos_usuario/
-dados/rag_database.db
-dados/rag_database.db-journal
+# VS Code / IDE
+.vscode/
+.idea/
+.DS_Store
 
-# Cache de modelos
+# Codex One Data
+backend/data/
+backend/uploads/
+*.pdf
+*.epub
+dados/
+
+# Cache
 .cache/
 models/

@@ -1,9 +1,0 @@
-# requirements.txt
-customtkinter
-PyMuPDF
-sentence-transformers
-ollama
-chromadb
-ebooklib
-beautifulsoup4
-rich
