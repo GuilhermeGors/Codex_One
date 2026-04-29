@@ -271,6 +271,9 @@ async def delete_document(doc_id: str):
     if not success:
         raise HTTPException(500, "Failed to delete document chunks")
 
+    # Clear threats from memory so dashboard updates
+    metrics_store.remove_threats_for_doc(doc_id)
+
     # Log deletion to Audit Log
     audit_log.record_event(
         "DOCUMENT_DELETED",

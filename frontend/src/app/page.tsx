@@ -119,22 +119,20 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            <span className="text-primary">Codex</span>{" "}
-            <span className="text-foreground">One</span>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Codex One v2: Enterprise Knowledge Guard
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Enterprise RAG Intelligence Dashboard
+            Zero-Trust Sovereign Environment
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Badge
             variant="outline"
-            className={`${
-              health?.status === "healthy"
+            className={`${health?.status === "healthy"
                 ? "border-neon-green text-neon-green"
                 : "border-destructive text-destructive"
-            }`}
+              }`}
           >
             <Activity className="h-3 w-3 mr-1" />
             {health?.status ?? "connecting..."}

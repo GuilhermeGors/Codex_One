@@ -135,6 +135,14 @@ class MetricsStore:
         if len(self._threat_findings) > self.max_history * 10:
             self._threat_findings = self._threat_findings[-self.max_history * 5:]
 
+    def remove_threats_for_doc(self, doc_id: str):
+        """Remove threat findings associated with a deleted document."""
+        self._threat_findings = [f for f in self._threat_findings if f.get("doc_id") != doc_id]
+
+    def clear_all_threats(self):
+        """Clear all threat intelligence records."""
+        self._threat_findings = []
+
     def get_threat_summary(self) -> dict:
         """Get aggregated threat intelligence for the security dashboard."""
         if not self._threat_findings:

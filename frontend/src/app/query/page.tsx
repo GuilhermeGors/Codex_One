@@ -20,6 +20,11 @@ import {
   Brain,
   Loader2,
   FileText,
+  ShieldAlert,
+  ScanFace,
+  Database,
+  FileCheck,
+  Lock,
 } from "lucide-react";
 import { streamQuery } from "@/lib/api";
 
@@ -53,11 +58,11 @@ export default function QueryPage() {
   const [tokensOut, setTokensOut] = useState(0);
   const [totalLatency, setTotalLatency] = useState(0);
   const [stages, setStages] = useState<PipelineStage[]>([
-    { id: "embedding", label: "Query Embedding", icon: Zap, status: "waiting" },
-    { id: "retrieval", label: "Hybrid Search", icon: Search, status: "waiting" },
-    { id: "reranking", label: "Reranking", icon: Trophy, status: "waiting" },
-    { id: "grading", label: "Context Grading", icon: CheckCircle2, status: "waiting" },
-    { id: "generation", label: "LLM Generation", icon: Brain, status: "waiting" },
+    { id: "embedding", label: "Threat Quarantine Gate", icon: ShieldAlert, status: "waiting" },
+    { id: "retrieval", label: "Automatic PII Scrubbing", icon: ScanFace, status: "waiting" },
+    { id: "reranking", label: "Secure Local Vector DB", icon: Database, status: "waiting" },
+    { id: "grading", label: "Verified Local Context Retrieval", icon: FileCheck, status: "waiting" },
+    { id: "generation", label: "Air-Gapped LLM Inference", icon: Lock, status: "waiting" },
   ]);
 
   const [isMounted, setIsMounted] = useState(false);
@@ -76,8 +81,8 @@ export default function QueryPage() {
         if (parsed.tokensOut !== undefined) setTokensOut(parsed.tokensOut);
         if (parsed.totalLatency !== undefined) setTotalLatency(parsed.totalLatency);
         if (parsed.stages) {
-          const iconMap: Record<string, any> = { embedding: Zap, retrieval: Search, reranking: Trophy, grading: CheckCircle2, generation: Brain };
-          setStages(parsed.stages.map((s: any) => ({ ...s, icon: iconMap[s.id] || Zap })));
+          const iconMap: Record<string, any> = { embedding: ShieldAlert, retrieval: ScanFace, reranking: Database, grading: FileCheck, generation: Lock };
+          setStages(parsed.stages.map((s: any) => ({ ...s, icon: iconMap[s.id] || ShieldAlert })));
         }
       } catch (e) {}
     }
@@ -176,15 +181,33 @@ export default function QueryPage() {
     );
   };
 
+  const handleClearChat = () => {
+    sessionStorage.removeItem("query_state");
+    resetPipeline();
+    setSubmittedQuery("");
+    setResponse("");
+    setSources([]);
+  };
+
   if (!isMounted) return null;
 
   return (
     <div className="flex h-screen">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col p-6">
-        <h1 className="text-xl font-bold mb-4">
-          <span className="text-primary">AI</span> Query
-        </h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold">
+            Codex One v2: Enterprise Knowledge Guard
+          </h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleClearChat}
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-border/50"
+          >
+            Clear Chat
+          </Button>
+        </div>
 
         {/* Response Area */}
         <Card className="glass border-border/50 flex-1 mb-4 overflow-hidden">
@@ -220,8 +243,9 @@ export default function QueryPage() {
                 ) : null}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                Ask a question about your documents...
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm flex-col text-center">
+                <p>Query your verified local documents in a secure, air-gapped environment.</p>
+                <p>Your data never leaves your infrastructure.</p>
               </div>
             )}
 
@@ -265,7 +289,7 @@ export default function QueryPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            placeholder="Ask about your documents..."
+            placeholder="Ask questions about your verified local documents..."
             className="flex-1 px-4 py-3 rounded-lg bg-input border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
           />
           <Button
@@ -285,18 +309,15 @@ export default function QueryPage() {
         <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
           <div className="flex gap-4">
             <span>
-              Input: <span className="text-neon-cyan font-mono">{tokensIn}</span> tokens
+              Tokens In: <span className="text-neon-cyan font-mono">{tokensIn}</span>
             </span>
             <span>
-              Output: <span className="text-neon-violet font-mono">{tokensOut}</span> tokens
-            </span>
-            <span>
-              Total: <span className="text-foreground font-mono">{tokensIn + tokensOut}</span>
+              Tokens Out: <span className="text-neon-violet font-mono">{tokensOut}</span>
             </span>
           </div>
           {totalLatency > 0 && (
             <span>
-              Latency: <span className="text-neon-green font-mono">{(totalLatency / 1000).toFixed(2)}s</span>
+              Latency: <span className="text-neon-green font-mono">{totalLatency.toFixed(0)}ms</span>
             </span>
           )}
         </div>
@@ -305,7 +326,7 @@ export default function QueryPage() {
       {/* Pipeline Visualization Panel */}
       <div className="w-72 border-l border-border p-4 flex flex-col">
         <h2 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wider">
-          Processing Pipeline
+          Zero-Egress Integrity Pipeline
         </h2>
 
         <div className="space-y-1">

@@ -47,3 +47,10 @@ async def get_cost_analysis():
 async def get_threat_intelligence():
     """Threat scan summary: detected threats by category and severity."""
     return metrics_store.get_threat_summary()
+
+
+@router.delete("/threats")
+async def clear_threat_intelligence():
+    """Clear all threat scan history from memory."""
+    metrics_store.clear_all_threats()
+    return {"status": "cleared", "message": "Threat intelligence dashboard has been reset."}
